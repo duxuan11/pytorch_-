@@ -30,3 +30,9 @@ print("After layer2: x.shape = {}".format(x.shape))
 x = layer3(x)
 x =F.relu(x,inplace=True)
 print("After layer3: x.shape = {}".format(x.shape))
+
+
+'''
+注意在pytorch中 autograd会自动记录向后求导的过程
+自己要写好forward
+'''
