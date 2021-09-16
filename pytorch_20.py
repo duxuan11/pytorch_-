@@ -1,4 +1,4 @@
-from pytorch_18 import forward
+
 import torch 
 import torch.nn as nn
 import torch.nn.functional as F
@@ -38,7 +38,8 @@ class MLP(nn.Module):
     def forward(self,x):
         x = self.model(x)
         return x 
-        
+
+
 '''
 torch.nn的实现去调用torch.nn.functional，实现方式是一致的。它们的区别是：
 nn可以写在深度学习模型的初始化中，其是一个类；F函数不可以，它是一个实际的函数，
@@ -47,8 +48,18 @@ nn.大写的
 F.小写的
 '''
 
-
+'''
+F.relu(x,inplace=True) 的结果与 layer1 = nn.ReLU() 和 x2 = layer1(x) 一致
+我们尽量用nn.ReLu()
+以下是测试代码
+'''
+#-------------------------------------
 x = torch.randn(1,10)
-print(F.relu(x,inplace=True))
-x = nn.ReLU(x)
-print(x)
+print("原先的x = {}".format(x))
+x1 = F.relu(x,inplace=True)
+print("F.relu之后的结果: {}".format(x1))
+# x = nn.ReLU(x) nn.ReLu()不能传参
+layer1 = nn.ReLU()
+x2 = layer1(x)
+print(" nn.ReLU之后的结果: {}".format(x2))
+#--------------------------------------
