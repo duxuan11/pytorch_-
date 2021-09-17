@@ -3,9 +3,9 @@ import  torch.nn as nn
 import  torch.nn.functional as F
 import  torch.optim as optim
 from    torchvision import datasets, transforms
-
-#创建自己的深度学习全连接层(higher level)
-
+'''
+测试方法 2 测试集上计算准确度
+'''
 batch_size = 200
 learning_rate = 1e-2
 epochs = 10
@@ -36,19 +36,19 @@ class MLP(nn.Module):
        
         self.model =  nn.Sequential(
             nn.Linear(784,200),
-            nn.ReLU(inplace=True), #nn.LeakyReLU(inplace=True)
+            nn.LeakyReLU(inplace=True), #nn.LeakyReLU(inplace=True)
             nn.Linear(200,200),
-            nn.ReLU(inplace=True),
+            nn.LeakyReLU(inplace=True),
             nn.Linear(200,10),
-            nn.ReLU(inplace=True),
+            nn.LeakyReLU(inplace=True),
         )
 
     def forward(self,x):
         x = self.model(x)
         return x 
  
- 
-net = MLP()  #初始化完成
+device = torch.device('cuda:0') 
+net = MLP().to(device)  #初始化完成
 #net.parameters() 可以避免直接在优化器里传参[w1,b1,w2,....]
 optimizer = optim.SGD(net.parameters(),lr=learning_rate)
 print("net.parameters():={}".format(net.parameters()))
@@ -67,6 +67,7 @@ for epoch in range(epochs):
         torch.Size([200, 1, 28, 28])
         torch.Size([200, 784])  因此这个data是200行，view里的-1改成200是不会报错的
         '''
+        data,target = data.to(device),target.cuda()
         logits = net(data) #data进入到forward中(计算图)  
         loss = criteon(logits,target) #预测值与真实值之间的交叉熵
         ''''
@@ -81,25 +82,24 @@ for epoch in range(epochs):
 
         if batch_idx % 100 == 0:
             print("Train Epoch: {} [{}/{} ({:.0f}%)]\t loss: {:.6f}".format(
-                epoch,batch_idx * len(data), len(train_loader.dataset),
-                100.* batch_idx / len(train_loader),loss.item()
+                epoch,(batch_idx+100) * len(data), len(train_loader.dataset),
+                100.* (batch_idx+100) / len(train_loader),loss.item()
             ))
-#测试部分    
-test_loss = 0
-correct = 0
-for data,target in test_loader:
-    data = data.view(-1,28*28)
-    logits = net.forward(data)
-    test_loss += criteon(logits,target).item()
-    
-    pred = logits.data.max(1)[1]
-    correct += pred.eq(target.data).sum()
 
-test_loss /= len(test_loader.dataset)
-print('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f})%\n'.format(
-    test_loss,correct,len(test_loader.dataset),
-    100.* correct / len(test_loader.dataset)
-))
+    #测试精度，准确率    
+    test_loss = 0
+    correct = 0
+    for data,target in test_loader:
+        data = data.view(-1,28*28)
+        data,target = data.to(device),target.cuda()
+        logits = net(data)
+        test_loss += criteon(logits,target).item()
+        
+        pred = logits.argmax(dim = 1)
+        correct += torch.eq(pred,target).float().sum().item()
 
-
-
+    test_loss /= len(test_loader.dataset)
+    print('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f})%\n'.format(
+        test_loss,correct,len(test_loader.dataset),
+        100.* correct / len(test_loader.dataset)
+    ))

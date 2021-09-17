@@ -1,11 +1,16 @@
-import  torch
-import  torch.nn as nn
-import  torch.nn.functional as F
-import  torch.optim as optim
-from    torchvision import datasets, transforms
-
-#创建自己的深度学习全连接层(higher level)
-
+from pytorch_21 import MLP
+import torch 
+import torch.nn.functional as F
+import torch.optim as optim
+from torchvision import datasets, transforms
+import torch.nn as nn
+#使用GPU加速
+'''
+注意，tensor.cuda 会返回一个新对象，这个新对象的数据已转移至GPU，而之前的 tensor 还在原来的设备上
+（CPU ）。而 module.cuda 则会将所有的数据都迁移至 GPU ，并返回自己。所以 module = module.cuda() 
+和 module.cuda() 所起的作用一致。
+重新赋给自己，tensor 指向 cuda 上的数据，不再执行原数据。不指定使用的 GPU 设备，将默认使用第 1 块 GPU。
+'''
 batch_size = 200
 learning_rate = 1e-2
 epochs = 10
@@ -28,6 +33,8 @@ test_loader = torch.utils.data.DataLoader(
     batch_size=batch_size, shuffle=True)
 
 
+
+
 class MLP(nn.Module):
 
 
@@ -48,32 +55,18 @@ class MLP(nn.Module):
         return x 
  
  
-net = MLP()  #初始化完成
-#net.parameters() 可以避免直接在优化器里传参[w1,b1,w2,....]
+device = torch.device('cuda:0') #后面数字表示显卡号
+net = MLP().to(device) #模型.to() 加载显卡
 optimizer = optim.SGD(net.parameters(),lr=learning_rate)
-print("net.parameters():={}".format(net.parameters()))
 criteon = nn.CrossEntropyLoss() #交叉熵
 
-#训练部分
+
 for epoch in range(epochs):
     for batch_idx, (data,target) in enumerate(train_loader):
-        '''
-        view函数:这里-1表示一个不确定的数，就是你如果不确定你想要reshape成几行，那不确定的地方就可以写成-1
-        '''
-        #print(data.shape)
         data = data.view(-1,28*28)
-        #print(data.shape)
-        '''打印输出
-        torch.Size([200, 1, 28, 28])
-        torch.Size([200, 784])  因此这个data是200行，view里的-1改成200是不会报错的
-        '''
-        logits = net(data) #data进入到forward中(计算图)  
-        loss = criteon(logits,target) #预测值与真实值之间的交叉熵
-        ''''
-        总得来说，这三个函数的作用是先将梯度归零optimizer.zero_grad()，
-        然后反向传播计算得到每个参数的梯度值loss.backward()，
-        最后通过梯度下降执行一步参数更新optimizer.step()
-        '''
+        data,target = data.to(device), data.cuda() #
+        logits = net(data)
+        loss = criteon(logits,target)        
         #根据交叉熵的值进行优化
         optimizer.zero_grad()
         loss.backward() 
@@ -89,6 +82,7 @@ test_loss = 0
 correct = 0
 for data,target in test_loader:
     data = data.view(-1,28*28)
+    data,target = data.to(device), data.cuda() #
     logits = net.forward(data)
     test_loss += criteon(logits,target).item()
     
@@ -100,6 +94,3 @@ print('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f})%\n'.format(
     test_loss,correct,len(test_loader.dataset),
     100.* correct / len(test_loader.dataset)
 ))
-
-
-
