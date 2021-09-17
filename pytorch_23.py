@@ -2,7 +2,7 @@ import torch
 import torch.nn
 import torch.nn.functional as F
 '''
-测试方法 1
+测试方法 1 准确度的小测试
 '''
 
 #假设有4张图片 每张有10个预测值
