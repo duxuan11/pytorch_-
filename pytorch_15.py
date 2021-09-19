@@ -24,8 +24,10 @@ y1 = x*w1+b1
 y2 = y1*w2+b2
 
 dy2_dy1 = autograd.grad(y2,[y1],retain_graph=True)[0]
-dy2_dw1 = autograd.grad(y1,[w1],retain_graph=True)[0]
+dy1_dw1 = autograd.grad(y1,[w1],retain_graph=True)[0]
 dy2_dw1 = autograd.grad(y2,[w1],retain_graph=True)[0]
-
+'''
+dy2/dw1 = dy2/dy1 * dy1/dw1 
+'''
 print(dy2_dy1*dy2_dw1)
 print(dy2_dw1)
