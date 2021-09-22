@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 
 '''
-1. Early Stopping
+1. Early Stopping 
 
 2. Dropout
 
@@ -41,4 +41,9 @@ for epoch in range(epochs):
         net_dropped.eval()**** 封住dropout()
 '''
 
-
+'''
+Stochastic x -> f(x) ~ N(0,x) 
+把原来在所有图片上的梯度之和变为到，取1个batch-size大小的样本的梯度之和
+batch = 8,16,32,64...
+Deterministric x -> f(x) 
+'''
