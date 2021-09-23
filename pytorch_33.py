@@ -38,5 +38,5 @@ print("layer.weight.shape: {}".format(layer.weight.shape))
 print("layer.bias.shape: {}".format(layer.bias.shape))
 
 print("------------------------------------------------")
-# 在test过程中
+# 在test过程中需要eval
 print(layer.eval())
